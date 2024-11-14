@@ -2,7 +2,7 @@
 Create pgm map from Gazebo world file for ROS localization
 
 ## Environment
-Tested on Ubuntu 16.04, ROS Kinetic, Boost 1.58, [Protocol Buffers v2.6.1](https://github.com/protocolbuffers/protobuf/releases/tag/v2.6.1)
+Tested on Ubuntu 18.04, ROS Melodic, Boost 1.65
 
 Install Protocol Buffers v2.6.1
 - Download the zip file 
