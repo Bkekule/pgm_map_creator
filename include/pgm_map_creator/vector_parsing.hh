@@ -3,7 +3,7 @@
 
 #include <deque>
 
-#include <gz/msgs/vector2d.pb.h>
+#include "collision_map_request.pb.h"
 
 namespace pgm_map_creator {
 
@@ -13,8 +13,9 @@ namespace pgm_map_creator {
 /// pairs
 /// \param[in,out] _corners Deque of pointers to Vector2d messages to populate
 /// \return True on success, false if the string is malformed
-bool ParseVectorArray(const char *_vectorString,
-                      std::deque<gz::msgs::Vector2d *> _corners);
+bool ParseVectorArray(
+    const char *_vectorString,
+    std::deque<collision_map_creator_msgs::msgs::Vector2d *> _corners);
 
 } // namespace pgm_map_creator
 

@@ -5,7 +5,6 @@
 #include <string>
 #include <thread>
 
-#include <gz/msgs/vector2d.pb.h>
 #include <gz/transport/Node.hh>
 
 #include "pgm_map_creator/vector_parsing.hh"
@@ -21,7 +20,7 @@ int main(int argc, char *argv[]) {
   }
 
   collision_map_creator_msgs::msgs::CollisionMapRequest request;
-  std::deque<gz::msgs::Vector2d *> corners;
+  std::deque<collision_map_creator_msgs::msgs::Vector2d *> corners;
 
   corners.push_back(request.mutable_upper_left());
   corners.push_back(request.mutable_upper_right());

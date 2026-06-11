@@ -6,8 +6,9 @@
 
 namespace pgm_map_creator {
 
-bool ParseVectorArray(const char *_vectorString,
-                      std::deque<gz::msgs::Vector2d *> _corners) {
+bool ParseVectorArray(
+    const char *_vectorString,
+    std::deque<collision_map_creator_msgs::msgs::Vector2d *> _corners) {
   std::string cornersStr = _vectorString;
   size_t opening = 0;
   size_t closing = 0;
