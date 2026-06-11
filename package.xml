@@ -10,8 +10,12 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <build_depend>gazebo_dev</build_depend>
-  <exec_depend>gazebo_ros</exec_depend>
+  <build_depend>gz-sim8-vendor</build_depend>
+  <build_depend>gz-transport13-vendor</build_depend>
+  <build_depend>gz-msgs10-vendor</build_depend>
+  <exec_depend>gz-sim8-vendor</exec_depend>
+  <exec_depend>gz-transport13-vendor</exec_depend>
+  <exec_depend>gz-msgs10-vendor</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

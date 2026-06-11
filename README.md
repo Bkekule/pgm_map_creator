@@ -1,59 +1,113 @@
-# pgm_map_creator
-Create pgm map from Gazebo world file for ROS localization
+# PGM Map Creator (ROS2 Jazzy + Gz Harmonic)
 
-## Environment
-Tested on Ubuntu 18.04, ROS Melodic, Boost 1.65
+Generate a 2D PGM occupancy map from a Gazebo world file.
 
-Install Protocol Buffers v2.6.1
-- Download the zip file 
-- Remove the previous protocol buffer version
-- `$ cd /usr/local/include/google`
-- `$ sudo rm -rf protobuf`
-- Download the zip file of [Protocol Buffers v2.6.1](https://github.com/protocolbuffers/protobuf/releases/tag/v2.6.1)
-- Follow the installations given [here](https://github.com/protocolbuffers/protobuf/tree/master/src):
-  1. `$ ./autogen.sh`
+## Overview
 
-  2. `$ ./configure`
+This package provides a Gz Sim (Harmonic) world system plugin that reads collision
+geometries from the loaded world and rasterizes them into a PGM occupancy grid map.
+A companion `request_publisher` executable sends the map generation parameters to
+the running simulation via gz-transport.
 
-  3. `$ make`
+## Architecture
 
-  4. `$ make check`
+- **collision_map_creator** — A `gz::sim::System` plugin (shared library) that
+  loads into the Gazebo simulation, subscribes to `/collision_map/command`, and
+  generates a PGM file by checking collision bounding boxes at each grid cell.
+- **request_publisher** — A standalone executable that publishes a
+  `CollisionMapRequest` message specifying the map boundaries, resolution, scan
+  height, and output filename.
 
-  5. `$ sudo make install`
+## Dependencies
 
-  6. `$ sudo ldconfig`
-  
+Built for the **`osrf/ros:jazzy-simulation`** Docker image (Ubuntu 24.04 + ROS2 Jazzy + Gz Harmonic).
+
+Additional packages needed in your Docker image:
+
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    ros-jazzy-ros-gz \
+    libgz-sim8-dev \
+    libgz-transport13-dev \
+    libgz-msgs10-dev \
+    libgz-math7-dev \
+    libgz-plugin2-dev \
+    libsdformat14-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+## Build
+
+```bash
+source /opt/ros/jazzy/setup.bash
+cd ~/colcon_ws
+colcon build --packages-select pgm_map_creator
+source install/setup.bash
+```
+
 ## Usage
 
-### Add the package to your workspace
-1. Create a catkin workspace / Open the catkin workspace
-2. Clone the package to the src folder
-3. Comment the following lines in CMakeLists.txt in the msgs folder of pgm_map_creator and save it.(Edit it using gedit)
-``` 
-    #${PROTOBUF_IMPORT_DIRS}/vector2d.proto
-    #${PROTOBUF_IMPORT_DIRS}/header.proto
-    #${PROTOBUF_IMPORT_DIRS}/time.proto
+### 1. Add the plugin to your world SDF
+
+Add this `<plugin>` element inside your `<world>` tag:
+
+```xml
+<plugin filename="collision_map_creator" name="pgm_map_creator::CollisionMapCreator">
+</plugin>
 ```
-4. `catkin_make` and `source devel/setup.bash`
 
-### Add the map and insert the plugin
-1. Add your world file to world folder in the pgm_map_creator folder
-2. Add this line at the end of the world file, before `</world>` tag:
-`<plugin filename="libcollision_map_creator.so" name="collision_map_creator"/>`
+You also need the physics system plugin loaded (usually in the default server config):
 
-### Create the pgm map file
-1. Run `gazebo /home/jit/catkin_ws/src/pgm_map_creator/world/<map file>` with full path to the map and check if it opens correctly. If yes, the close it and follow the next steps.
-2. Run `source devel/setup.bash` in the following terminals before running the next commands to setup the environment variables 
-3. Open a terminal, run gzerver with the map file (Enter the entire path to the map file)
-`gzserver /home/jit/catkin_ws/src/pgm_map_creator/world/<map file>`
-4. Open another terminal, launch the request_publisher node
-`roslaunch pgm_map_creator request_publisher.launch`
-5. Wait for the plugin to generate map. Track the progress in the gzserver terminal. It will be located in the map folder
+```xml
+<plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
+</plugin>
+```
 
-## Map Properties
-Currently, please update the argument value in launch/request_publisher.launch file.
+### 2. Run with the launch file
 
-## Acknowledgements
-[Gazebo Custom Messages](http://gazebosim.org/wiki/Tutorials/1.9/custom_messages)
-[Gazebo Perfect Map Generator](https://github.com/koenlek/ros_lemtomap/tree/154c782cf8feb9112bc928e33a59728ca2192489/st_gazebo_perfect_map_generator)
+```bash
+ros2 launch pgm_map_creator request_publisher.launch.py \
+    world_file:=/path/to/your/world.sdf \
+    map_name:=my_map \
+    xmin:=-15 xmax:=15 ymin:=-15 ymax:=15 \
+    scan_height:=5 resolution:=0.01
+```
 
+### 3. Or run manually
+
+Terminal 1 — Start gz sim with your world:
+```bash
+export GZ_SIM_SYSTEM_PLUGIN_PATH=$(pwd)/install/lib/pgm_map_creator
+gz sim -s -r your_world.sdf
+```
+
+Terminal 2 — Publish the map request:
+```bash
+request_publisher '(-15,15)(15,15)(15,-15)(-15,-15)' 5 0.01 /output/path/map
+```
+
+The output will be written to `/output/path/map.pgm`.
+
+## Parameters
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `world_file` | Path to the .sdf world file | (required) |
+| `map_name` | Output filename (without .pgm extension) | `map` |
+| `save_folder` | Directory for output file | `<pkg_share>/maps` |
+| `xmin` | Minimum X coordinate | `-15` |
+| `xmax` | Maximum X coordinate | `15` |
+| `ymin` | Minimum Y coordinate | `-15` |
+| `ymax` | Maximum Y coordinate | `15` |
+| `scan_height` | Height from which to project collisions | `5` |
+| `resolution` | Map resolution in meters/pixel | `0.01` |
+
+## Notes
+
+- This uses bounding-box intersection rather than exact ray casting (which is not
+  yet available in Gz Harmonic). For most architectural models (walls, boxes), the
+  results are equivalent to the classic Gazebo version.
+- The ground plane is excluded automatically since it has zero height at Z=0.
+- For mesh geometries, an approximate bounding box is used based on the mesh scale.

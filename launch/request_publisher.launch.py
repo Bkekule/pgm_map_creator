@@ -1,5 +1,7 @@
+import os
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, TimerAction
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, FindPackageShare
 
 
@@ -8,6 +10,7 @@ def generate_launch_description():
 
     map_name = LaunchConfiguration('map_name')
     save_folder = LaunchConfiguration('save_folder')
+    world_file = LaunchConfiguration('world_file')
     xmin = LaunchConfiguration('xmin')
     xmax = LaunchConfiguration('xmax')
     ymin = LaunchConfiguration('ymin')
@@ -21,6 +24,10 @@ def generate_launch_description():
             'save_folder',
             default_value=PathJoinSubstitution([pkg_share, 'maps'])
         ),
+        DeclareLaunchArgument(
+            'world_file',
+            description='Path to the .world/.sdf file to generate map from'
+        ),
         DeclareLaunchArgument('xmin', default_value='-15'),
         DeclareLaunchArgument('xmax', default_value='15'),
         DeclareLaunchArgument('ymin', default_value='-15'),
@@ -28,17 +35,33 @@ def generate_launch_description():
         DeclareLaunchArgument('scan_height', default_value='5'),
         DeclareLaunchArgument('resolution', default_value='0.01'),
 
+        # Start gz sim with the world file (headless server mode)
         ExecuteProcess(
             cmd=[
-                'request_publisher',
-                ['(', xmin, ',', ymax, ')',
-                 '(', xmax, ',', ymax, ')',
-                 '(', xmax, ',', ymin, ')',
-                 '(', xmin, ',', ymin, ')'],
-                scan_height,
-                resolution,
-                PathJoinSubstitution([save_folder, map_name]),
+                'gz', 'sim', '-s', '-r',
+                '--iterations', '1',
+                world_file,
             ],
             output='screen',
+        ),
+
+        # Delay the request publisher to allow simulation to load
+        TimerAction(
+            period=5.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=[
+                        'request_publisher',
+                        ['(', xmin, ',', ymax, ')',
+                         '(', xmax, ',', ymax, ')',
+                         '(', xmax, ',', ymin, ')',
+                         '(', xmin, ',', ymin, ')'],
+                        scan_height,
+                        resolution,
+                        PathJoinSubstitution([save_folder, map_name]),
+                    ],
+                    output='screen',
+                ),
+            ],
         ),
     ])

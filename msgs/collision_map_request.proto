@@ -1,14 +1,17 @@
+syntax = "proto3";
+
 package collision_map_creator_msgs.msgs;
-import "vector2d.proto";
+
+import "gz/msgs/vector2d.proto";
 
 message CollisionMapRequest
 {
-  required gazebo.msgs.Vector2d   upperLeft  = 1;
-  required gazebo.msgs.Vector2d   upperRight = 2;
-  required gazebo.msgs.Vector2d   lowerRight = 3;
-  required gazebo.msgs.Vector2d   lowerLeft  = 4;
-  required double                 height     = 5;
-  required double                 resolution = 6;
-  optional string                 filename   = 7 [default = ""];
-  optional int32                  threshold  = 8 [default = 255];
+  gz.msgs.Vector2d upper_left  = 1;
+  gz.msgs.Vector2d upper_right = 2;
+  gz.msgs.Vector2d lower_right = 3;
+  gz.msgs.Vector2d lower_left  = 4;
+  double height     = 5;
+  double resolution = 6;
+  string filename   = 7;
+  int32  threshold  = 8;
 }
