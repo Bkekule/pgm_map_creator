@@ -73,7 +73,10 @@ def generate_launch_description():
             actions=[
                 ExecuteProcess(
                     cmd=[
-                        'request_publisher',
+                        PathJoinSubstitution([
+                            pkg_share, '..', 'lib', 'pgm_map_creator',
+                            'request_publisher'
+                        ]),
                         ['(', xmin, ',', ymax, ')',
                          '(', xmax, ',', ymax, ')',
                          '(', xmax, ',', ymin, ')',
