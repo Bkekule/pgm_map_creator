@@ -1,16 +1,25 @@
 import os
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, TimerAction
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, FindPackageShare
+from launch.actions import (
+    DeclareLaunchArgument,
+    ExecuteProcess,
+    SetEnvironmentVariable,
+    TimerAction,
+)
+from launch.substitutions import (
+    FindPackageShare,
+    LaunchConfiguration,
+    PathJoinSubstitution,
+)
 
 
 def generate_launch_description():
     pkg_share = FindPackageShare('pgm_map_creator')
 
+    world_name = LaunchConfiguration('world_name')
     map_name = LaunchConfiguration('map_name')
-    save_folder = LaunchConfiguration('save_folder')
-    world_file = LaunchConfiguration('world_file')
+    output_dir = LaunchConfiguration('output_dir')
     xmin = LaunchConfiguration('xmin')
     xmax = LaunchConfiguration('xmax')
     ymin = LaunchConfiguration('ymin')
@@ -19,15 +28,16 @@ def generate_launch_description():
     resolution = LaunchConfiguration('resolution')
 
     return LaunchDescription([
+        # ─── Arguments ──────────────────────────────────────────────────
+        DeclareLaunchArgument(
+            'world_name',
+            description=(
+                'Name of the .sdf world file. Discovered via '
+                'GZ_SIM_RESOURCE_PATH, same as running gz sim <name>.sdf'
+            ),
+        ),
         DeclareLaunchArgument('map_name', default_value='map'),
-        DeclareLaunchArgument(
-            'save_folder',
-            default_value=PathJoinSubstitution([pkg_share, 'maps'])
-        ),
-        DeclareLaunchArgument(
-            'world_file',
-            description='Path to the .world/.sdf file to generate map from'
-        ),
+        DeclareLaunchArgument('output_dir', default_value='/tmp'),
         DeclareLaunchArgument('xmin', default_value='-15'),
         DeclareLaunchArgument('xmax', default_value='15'),
         DeclareLaunchArgument('ymin', default_value='-15'),
@@ -35,17 +45,29 @@ def generate_launch_description():
         DeclareLaunchArgument('scan_height', default_value='5'),
         DeclareLaunchArgument('resolution', default_value='0.01'),
 
-        # Start gz sim with the world file (headless server mode)
+        # ─── Environment: tell gz sim where our plugin .so lives ────────
+        SetEnvironmentVariable(
+            name='GZ_SIM_SYSTEM_PLUGIN_PATH',
+            value=PathJoinSubstitution([
+                pkg_share, '..', 'lib', 'pgm_map_creator'
+            ]),
+        ),
+
+        # ─── Start gz sim headless ──────────────────────────────────────
+        # GZ_SIM_SERVER_CONFIG_PATH loads our plugin into the world
+        # automatically without modifying the .sdf file.
+        # world_name is discovered via GZ_SIM_RESOURCE_PATH (standard gz behavior).
         ExecuteProcess(
-            cmd=[
-                'gz', 'sim', '-s', '-r',
-                '--iterations', '1',
-                world_file,
-            ],
+            cmd=['gz', 'sim', '-s', '-r', '--iterations', '100', world_name],
+            additional_env={
+                'GZ_SIM_SERVER_CONFIG_PATH': PathJoinSubstitution(
+                    [pkg_share, 'config', 'server.config']
+                ),
+            },
             output='screen',
         ),
 
-        # Delay the request publisher to allow simulation to load
+        # ─── Publish map request after sim loads ────────────────────────
         TimerAction(
             period=5.0,
             actions=[
@@ -58,7 +80,7 @@ def generate_launch_description():
                          '(', xmin, ',', ymin, ')'],
                         scan_height,
                         resolution,
-                        PathJoinSubstitution([save_folder, map_name]),
+                        PathJoinSubstitution([output_dir, map_name]),
                     ],
                     output='screen',
                 ),

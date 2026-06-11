@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8...3.22)
 project(pgm_map_creator)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -90,7 +90,7 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY launch world maps
+install(DIRECTORY launch config maps
   DESTINATION share/${PROJECT_NAME}
 )
 
