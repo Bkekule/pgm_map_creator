@@ -8,10 +8,10 @@ from launch.actions import (
     TimerAction,
 )
 from launch.substitutions import (
-    FindPackageShare,
     LaunchConfiguration,
     PathJoinSubstitution,
 )
+from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
