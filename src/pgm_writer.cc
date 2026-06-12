@@ -1,5 +1,6 @@
 #include "pgm_map_creator/pgm_writer.hh"
 
+#include <filesystem>
 #include <fstream>
 
 namespace pgm_map_creator {
@@ -7,6 +8,10 @@ namespace pgm_map_creator {
 void WritePgm(const std::string &_filename,
               const std::vector<std::vector<uint8_t>> &_image, int _width,
               int _height) {
+  auto parent = std::filesystem::path(_filename).parent_path();
+  if (!parent.empty())
+    std::filesystem::create_directories(parent);
+
   std::ofstream ofs(_filename + ".pgm");
   ofs << "P2" << '\n';
   ofs << _width << ' ' << _height << '\n';

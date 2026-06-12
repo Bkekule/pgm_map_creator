@@ -9,7 +9,7 @@ from launch.actions import (
 )
 from launch.substitutions import (
     LaunchConfiguration,
-    PathJoinSubstitution,
+    PathJoinSubstitution,  # used for plugin/binary paths
 )
 from launch_ros.substitutions import FindPackageShare
 
@@ -18,8 +18,7 @@ def generate_launch_description():
     pkg_share = FindPackageShare('pgm_map_creator')
 
     world_name = LaunchConfiguration('world_name')
-    map_name = LaunchConfiguration('map_name')
-    output_dir = LaunchConfiguration('output_dir')
+    output_path = LaunchConfiguration('output_path')
     xmin = LaunchConfiguration('xmin')
     xmax = LaunchConfiguration('xmax')
     ymin = LaunchConfiguration('ymin')
@@ -36,8 +35,8 @@ def generate_launch_description():
                 'GZ_SIM_RESOURCE_PATH, same as running gz sim <name>.sdf'
             ),
         ),
-        DeclareLaunchArgument('map_name', default_value='map'),
-        DeclareLaunchArgument('output_dir', default_value='/tmp'),
+        DeclareLaunchArgument('output_path', default_value='/tmp/map',
+                              description='Full output path without .pgm extension'),
         DeclareLaunchArgument('xmin', default_value='-15'),
         DeclareLaunchArgument('xmax', default_value='15'),
         DeclareLaunchArgument('ymin', default_value='-15'),
@@ -83,7 +82,7 @@ def generate_launch_description():
                          '(', xmin, ',', ymin, ')'],
                         scan_height,
                         resolution,
-                        PathJoinSubstitution([output_dir, map_name]),
+                        output_path,
                     ],
                     output='screen',
                 ),

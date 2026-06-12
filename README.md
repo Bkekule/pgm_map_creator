@@ -70,7 +70,7 @@ You also need the physics system plugin loaded (usually in the default server co
 ```bash
 ros2 launch pgm_map_creator generate_map.launch.py \
     world_name:=my_world.sdf \
-    map_name:=my_map \
+    output_path:=/home/user/maps/my_map \
     xmin:=-15 xmax:=15 ymin:=-15 ymax:=15 \
     scan_height:=5 resolution:=0.01
 ```
@@ -95,8 +95,7 @@ The output will be written to `/output/path/map.pgm`.
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `world_file` | Path to the .sdf world file | (required) |
-| `map_name` | Output filename (without .pgm extension) | `map` |
-| `save_folder` | Directory for output file | `<pkg_share>/maps` |
+| `output_path` | Full output path without `.pgm` extension | `/tmp/map` |
 | `xmin` | Minimum X coordinate | `-15` |
 | `xmax` | Maximum X coordinate | `15` |
 | `ymin` | Minimum Y coordinate | `-15` |
