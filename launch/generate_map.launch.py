@@ -44,13 +44,14 @@ def generate_launch_description():
 
         # ─── Environment: tell gz sim where our plugin .so lives ────────
         SetEnvironmentVariable(name='GZ_SIM_SYSTEM_PLUGIN_PATH', value=_pkg_lib),
+        SetEnvironmentVariable(
+            name='GZ_SIM_SERVER_CONFIG_PATH',
+            value=os.path.join(_pkg_share, 'config', 'server.config'),
+        ),
 
         # ─── Start gz sim headless ──────────────────────────────────────
         ExecuteProcess(
             cmd=['gz', 'sim', '-s', '-r', world_name],
-            additional_env={
-                'GZ_SIM_SERVER_CONFIG_PATH': os.path.join(_pkg_share, 'config', 'server.config'),
-            },
             output='screen',
         ),
 
