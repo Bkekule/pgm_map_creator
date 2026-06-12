@@ -49,23 +49,7 @@ source install/setup.bash
 
 ## Usage
 
-### 1. Add the plugin to your world SDF
-
-Add this `<plugin>` element inside your `<world>` tag:
-
-```xml
-<plugin filename="collision_map_creator" name="pgm_map_creator::CollisionMapCreator">
-</plugin>
-```
-
-You also need the physics system plugin loaded (usually in the default server config):
-
-```xml
-<plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
-</plugin>
-```
-
-### 2. Run with the launch file
+### 1. Run with the launch file
 
 ```bash
 ros2 launch pgm_map_creator generate_map.launch.py \
