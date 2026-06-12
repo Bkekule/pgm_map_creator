@@ -57,7 +57,7 @@ def generate_launch_description():
         # automatically without modifying the .sdf file.
         # world_name is discovered via GZ_SIM_RESOURCE_PATH (standard gz behavior).
         ExecuteProcess(
-            cmd=['gz', 'sim', '-s', '-r', '--iterations', '100', world_name],
+            cmd=['gz', 'sim', '-s', '-r', world_name],
             additional_env={
                 'GZ_SIM_SERVER_CONFIG_PATH': PathJoinSubstitution(
                     [pkg_share, 'config', 'server.config']
