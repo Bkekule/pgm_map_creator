@@ -17,8 +17,21 @@ _pkg_lib   = os.path.join(get_package_prefix('pgm_map_creator'), 'lib', 'pgm_map
 _pkg_share = get_package_share_directory('pgm_map_creator')
 
 
+def _resolve_world(world_name: str) -> str:
+    if os.path.isabs(world_name):
+        return world_name
+    for search_dir in os.environ.get('GZ_SIM_RESOURCE_PATH', '').split(':'):
+        candidate = os.path.join(search_dir, world_name)
+        if os.path.isfile(candidate):
+            return candidate
+    raise RuntimeError(
+        f"World file '{world_name}' not found. "
+        "Provide a full path or add its directory to GZ_SIM_RESOURCE_PATH."
+    )
+
+
 def _inject_plugin(context, *args, **kwargs):
-    world_name  = context.perform_substitution(LaunchConfiguration('world_name'))
+    world_name  = _resolve_world(context.perform_substitution(LaunchConfiguration('world_name')))
     output_path = LaunchConfiguration('output_path')
     xmin        = LaunchConfiguration('xmin')
     xmax        = LaunchConfiguration('xmax')

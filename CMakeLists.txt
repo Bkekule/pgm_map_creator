@@ -57,6 +57,9 @@ target_link_libraries(collision_map_creator
   gz-sim8::gz-sim8
   gz-transport13::gz-transport13
 )
+set_target_properties(collision_map_creator PROPERTIES
+  INSTALL_RPATH "$ORIGIN"
+)
 
 # ─── Install ────────────────────────────────────────────────────────────────
 install(TARGETS
