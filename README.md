@@ -68,8 +68,8 @@ You also need the physics system plugin loaded (usually in the default server co
 ### 2. Run with the launch file
 
 ```bash
-ros2 launch pgm_map_creator request_publisher.launch.py \
-    world_file:=/path/to/your/world.sdf \
+ros2 launch pgm_map_creator generate_map.launch.py \
+    world_name:=my_world.sdf \
     map_name:=my_map \
     xmin:=-15 xmax:=15 ymin:=-15 ymax:=15 \
     scan_height:=5 resolution:=0.01

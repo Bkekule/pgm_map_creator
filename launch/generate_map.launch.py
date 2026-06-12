@@ -49,7 +49,7 @@ def generate_launch_description():
         SetEnvironmentVariable(
             name='GZ_SIM_SYSTEM_PLUGIN_PATH',
             value=PathJoinSubstitution([
-                pkg_share, '..', 'lib', 'pgm_map_creator'
+                pkg_share, '../..', 'lib', 'pgm_map_creator'
             ]),
         ),
 
