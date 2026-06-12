@@ -1,5 +1,6 @@
 import os
 
+from ament_index_python.packages import get_package_prefix, get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -7,24 +8,21 @@ from launch.actions import (
     SetEnvironmentVariable,
     TimerAction,
 )
-from launch.substitutions import (
-    LaunchConfiguration,
-    PathJoinSubstitution,  # used for plugin/binary paths
-)
-from launch_ros.substitutions import FindPackageShare
+from launch.substitutions import LaunchConfiguration
+
+_pkg_lib  = os.path.join(get_package_prefix('pgm_map_creator'), 'lib', 'pgm_map_creator')
+_pkg_share = get_package_share_directory('pgm_map_creator')
 
 
 def generate_launch_description():
-    pkg_share = FindPackageShare('pgm_map_creator')
-
-    world_name = LaunchConfiguration('world_name')
+    world_name  = LaunchConfiguration('world_name')
     output_path = LaunchConfiguration('output_path')
-    xmin = LaunchConfiguration('xmin')
-    xmax = LaunchConfiguration('xmax')
-    ymin = LaunchConfiguration('ymin')
-    ymax = LaunchConfiguration('ymax')
+    xmin        = LaunchConfiguration('xmin')
+    xmax        = LaunchConfiguration('xmax')
+    ymin        = LaunchConfiguration('ymin')
+    ymax        = LaunchConfiguration('ymax')
     scan_height = LaunchConfiguration('scan_height')
-    resolution = LaunchConfiguration('resolution')
+    resolution  = LaunchConfiguration('resolution')
 
     return LaunchDescription([
         # ─── Arguments ──────────────────────────────────────────────────
@@ -45,23 +43,13 @@ def generate_launch_description():
         DeclareLaunchArgument('resolution', default_value='0.01'),
 
         # ─── Environment: tell gz sim where our plugin .so lives ────────
-        SetEnvironmentVariable(
-            name='GZ_SIM_SYSTEM_PLUGIN_PATH',
-            value=PathJoinSubstitution([
-                pkg_share, '../..', 'lib', 'pgm_map_creator'
-            ]),
-        ),
+        SetEnvironmentVariable(name='GZ_SIM_SYSTEM_PLUGIN_PATH', value=_pkg_lib),
 
         # ─── Start gz sim headless ──────────────────────────────────────
-        # GZ_SIM_SERVER_CONFIG_PATH loads our plugin into the world
-        # automatically without modifying the .sdf file.
-        # world_name is discovered via GZ_SIM_RESOURCE_PATH (standard gz behavior).
         ExecuteProcess(
             cmd=['gz', 'sim', '-s', '-r', world_name],
             additional_env={
-                'GZ_SIM_SERVER_CONFIG_PATH': PathJoinSubstitution(
-                    [pkg_share, 'config', 'server.config']
-                ),
+                'GZ_SIM_SERVER_CONFIG_PATH': os.path.join(_pkg_share, 'config', 'server.config'),
             },
             output='screen',
         ),
@@ -72,10 +60,7 @@ def generate_launch_description():
             actions=[
                 ExecuteProcess(
                     cmd=[
-                        PathJoinSubstitution([
-                            pkg_share, '../..', 'lib', 'pgm_map_creator',
-                            'request_publisher'
-                        ]),
+                        os.path.join(_pkg_lib, 'request_publisher'),
                         ['(', xmin, ',', ymax, ')',
                          '(', xmax, ',', ymax, ')',
                          '(', xmax, ',', ymin, ')',
