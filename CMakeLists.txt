@@ -44,6 +44,9 @@ target_link_libraries(request_publisher
   vector_parsing
   gz-transport13::gz-transport13
 )
+set_target_properties(request_publisher PROPERTIES
+  INSTALL_RPATH "$ORIGIN"
+)
 
 # ─── Collision map creator plugin (gz-sim system) ───────────────────────────
 add_library(collision_map_creator SHARED src/collision_map_creator.cc)
