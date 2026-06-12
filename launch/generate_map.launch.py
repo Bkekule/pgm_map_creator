@@ -74,7 +74,7 @@ def generate_launch_description():
                 ExecuteProcess(
                     cmd=[
                         PathJoinSubstitution([
-                            pkg_share, '..', 'lib', 'pgm_map_creator',
+                            pkg_share, '../..', 'lib', 'pgm_map_creator',
                             'request_publisher'
                         ]),
                         ['(', xmin, ',', ymax, ')',
